@@ -1,0 +1,82 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Writing Game</title>
+  <meta name="description" content="Game for Kids">
+  <meta name="author" content="---">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Rajdhani" rel="stylesheet">
+  <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+  <div id="game-type-selector" class="game-type-selector">
+    <div class="game-type-selector-container">
+      <input id="input-max-point" name="input-max-point" placeholder="Enter Maximum number of Points"></input>
+      <a id="begginer-selector" href="">
+        <div class="beginner-level-selector">
+          Beginner
+        </div>
+      </a>
+      <a id="advanced-selector" href="">
+        <div class="advanced-level-selector">
+          Advanced
+        </div>
+      </a>
+    </div>
+  </div>
+  <div id="zone-word" class="zone-word">
+    <div id="word-written">Word Written</div>
+    <div id="word-test">Word Test</div>
+    <div id="line-limit"></div>
+    <div id="sostainer-line-limit"></div>
+  </div>
+  <div id="grade-zone">
+    <div id="time-counter">--:--</div>
+    <div><img class="img-dashboard" src="./media/strong.png"></img> <span id="level-counter"> Level: 0</span></div>
+    <div><img class="img-dashboard" src="./media/energy.png"></img> <span id="points-counter"> Points: 0</span> </div>
+  </div>
+  <div id="zone-keyboard" class="zone-keyboard">
+    <div class="keyboard-container">
+      <div class="keyboard-row first-row">
+          <button id="q" class="key q">q</button>
+          <button id="w" class="key w">w</button>
+          <button id="e" class="key e">e</button>
+          <button id="r" class="key r">r</button>
+          <button id="t" class="key t">t</button>
+          <button id="y" class="key y">y</button>
+          <button id="u" class="key u">u</button>
+          <button id="i" class="key i">i</button>
+          <button id="o" class="key o">o</button>
+          <button id="p" class="key p">p</button>
+          <button id="del" class="key delete">&#x232b;</button>
+      </div>
+      <div class="keyboard-row second-row">
+          <button id="a" class="key a">a</button>
+          <button id="s" class="key s">s</button>
+          <button id="d" class="key d">d</button>
+          <button id="f" class="key f">f</button>
+          <button id="g" class="key g">g</button>
+          <button id="h" class="key h">h</button>
+          <button id="j" class="key j">j</button>
+          <button id="k" class="key k">k</button>
+          <button id="l" class="key l">l</button>
+      </div>
+      <div class="keyboard-row third-row">
+          <button id="z" class="key z">z</button>
+          <button id="x" class="key x">x</button>
+          <button id="c" class="key c">c</button>
+          <button id="v" class="key v">v</button>
+          <button id="b" class="key b">b</button>
+          <button id="n" class="key n">n</button>
+          <button id="m" class="key m">m</button>
+      </div>
+    </div>
+  </div>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>
