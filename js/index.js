@@ -1,3 +1,19 @@
+class Observable {
+  constructor() {
+    this.observers = [];
+  }
+  subscribe(f) {
+    this.observers.push(f);
+  }
+
+  unsubscribe(f) {
+    this.observers = this.observers.filter(subscriber => subscriber !== f);
+  }
+  notify(data) {
+    this.observers.forEach(observer => observer(data));
+  }
+}
+
 $(function() {
     //Words generated in https://www.randomwordgenerator.com/
     let data = {
@@ -10,50 +26,17 @@ $(function() {
         ],
         currentWord: "",
         testWord: "",
-        points : 0,
+        points : 0.0,
         level: 0,
         timer: 110,
         maxTime: 120,
-        maxMargin: 15,//vh
-        wrongPunctiation: 0.5,
-        maxPunctiation: 100
+        maxMargin: 15,
+        wrongPointValue: 0.5,
+        maxPointValue: 100.0
     };
 
-    class Observable {
-      constructor() {
-        this.observers = [];
-      }
-
-      // add the ability to subscribe to a new object / DOM element
-      // essentially, add something to the observers array
-      subscribe(f) {
-        this.observers.push(f);
-      }
-
-      // add the ability to unsubscribe from a particular object
-      // essentially, remove something from the observers array
-      unsubscribe(f) {
-        this.observers = this.observers.filter(subscriber => subscriber !== f);
-      }
-
-      // update all subscribed objects / DOM elements
-      // and pass some data to each of them
-      notify(data) {
-        this.observers.forEach(observer => observer(data));
-      }
-    }
-
     var octopus = {
-        generateTestWord: async function() {
-          let wordsList = data.words;
-          let nOfLetters = data.level + 4;
-          let possibleWords = wordsList.filter((word)=>{
-            return (word.length <= nOfLetters)
-          });
-          data.testWord = possibleWords[Math.floor(Math.random() * possibleWords.length)];
-          return false;
-        },
-
+        // GETTERS
         getTestWord: function(){
           return data.testWord;
         },
@@ -62,6 +45,43 @@ $(function() {
           return data.currentWord;
         },
 
+        getPoints(){
+          return data.points;
+        },
+        getLevel(){
+          return data.level;
+        },
+
+        // SETTERS
+        setMaxPointValue(val){
+          data.maxPointValue= parseInt(val);
+        },
+
+        // ACTUATORS
+        selectLetter: async function(val) {
+            let currentWord = data.currentWord;
+            let letter2Verify = data.testWord.substring(currentWord.length,currentWord.length+1)
+            let newWord = "";
+            if(val == 'del'){
+              data.points = data.points - 1
+            }
+            else if(letter2Verify == val){
+              data.points = data.points + 1
+            }
+            else if(letter2Verify !== val){
+              data.points = data.points - data.wrongPointValue
+            }
+            if(val !== 'del'){
+              newWord = currentWord.concat(val);
+            }else{
+              newWord = currentWord.substring(0,currentWord.length-1)
+            }
+            data.currentWord = newWord;
+            this.verifyWord();
+            return false;
+        },
+
+        // VERIFIERS
         verifyWord: function(){
           if(data.testWord == data.currentWord){
             swal({
@@ -73,10 +93,10 @@ $(function() {
             });
             data.points = data.points + 2;
             data.level = Math.floor(data.points / 10.0);
-            this.generateTestWord();
             data.currentWord = "";
             data.timer = 10;
-            if(data.maxPunctiation <= data.points){
+            this.generateTestWord();
+            if(data.maxPointValue<= data.points){
               this.stopTimer();
               swal({
                 title: `AWESOME!`,
@@ -87,18 +107,20 @@ $(function() {
             }
           }
         },
-        getPoints(){
-          return data.points;
+
+        // GENERATORS
+        generateTestWord: async function() {
+          let initialNumberOfLetters = 4;
+          let wordsList = data.words;
+          let nOfLetters = data.level + initialNumberOfLetters;
+          let possibleWords = wordsList.filter((word)=>{
+            return (word.length <= nOfLetters)
+          });
+          data.testWord = possibleWords[Math.floor(Math.random() * possibleWords.length)];
+          return false;
         },
-        getLevel(){
-          return data.level;
-        },
-        setMaxPunctuation(val){
-          data.maxPunctiation = parseInt(val);
-        },
-        stopTimer(){
-          clearInterval(data.counterInterval);
-        },
+
+        // TIME CONTROLLERS
         initializeTimer(timeObservable, wordObservable, positionObservable){
           let counterInterval = setInterval(function(){
             let currentTime = data.timer;
@@ -115,33 +137,12 @@ $(function() {
           }, 100);
           data.counterInterval = counterInterval;
         },
-        selectLetter: async function(val) {
-            let currentWord = data.currentWord;
-            //console.log("Curent Word is: " + currentWord)
-            //console.log("Written letter: " + val);
-            let letter2Verify = data.testWord.substring(currentWord.length,currentWord.length+1)
-            //console.log("Test letter " + letter2Verify)
-            let newWord = "";
-            if(val == 'del'){
-              data.points = data.points - 1
-            }
-            else if(letter2Verify == val){
-              data.points = data.points + 1
-            }
-            else if(letter2Verify !== val){
-              data.points = data.points - data.wrongPunctiation
-            }
 
-            if(val !== 'del'){
-              newWord = currentWord.concat(val);
-            }else{
-              newWord = currentWord.substring(0,currentWord.length-1)
-            }
-            data.currentWord = newWord;
-            this.verifyWord();
-            return false;
+        stopTimer(){
+          clearInterval(data.counterInterval);
         },
 
+        // INITIALIZERS
         init: function() {
             this.generateTestWord();
             view.init();
@@ -151,7 +152,7 @@ $(function() {
 
     var view = {
         init: function() {
-            // grab elements and html for using in the render function
+            // GRAB ALL OF THE REFERENCES TO THE DOM
             this.$wordWritten = $('#word-written');
             this.$wordTest = $('#word-test');
             this.$keyList = $('.keyboard-row');
@@ -161,24 +162,28 @@ $(function() {
             this.$begginerSelector = $('#begginer-selector');
             this.$advancedSelector = $('#advanced-selector');
             this.$gameTypeSelector = $('#game-type-selector');
-            this.$maxPunctiationInput = $('input[name=input-max-point]');
-            let $gameTypeSelector = this.$gameTypeSelector
+            this.$maxPointInput = $('input[name=input-max-point]');
+
+            // CONTROL THE EVENT WHEN THE USER SELECTS BEGINNER MODE
+            let $gameTypeSelector = this.$gameTypeSelector;
             this.$begginerSelector.on('click', function(e) {
               e.preventDefault();
               $gameTypeSelector.css('display','none');
-                //this.initializeTimerView();
             });
 
-            this.$maxPunctiationInput.on("input",function(e){
-              octopus.setMaxPunctuation(e.target.value);
-            })
-
+            // CONTROL THE EVENT WHEN THE USER SELECTS ADVANCED MODE
             this.$advancedSelector.on('click', function(e) {
               e.preventDefault();
               $gameTypeSelector.css('display','none');
               view.initializeTimerView();
             });
 
+            // CONTROL THE EVENT WHEN THE USER INPUTS MAXIMUM Nº OF POINTS
+            this.$maxPointInput.on("input",function(e){
+              octopus.setMaxPointValue(e.target.value);
+            })
+
+            // CONTROL THE EVENT WHEN THE USER SELECTS A LETTER (REAL KEYBOARD)
             document.addEventListener("keydown",async function (e) {
               if(e.keyCode == 8){
                 await octopus.selectLetter('del');
@@ -191,6 +196,8 @@ $(function() {
                 }
               }
             });
+
+            // CONTROL THE EVENT WHEN THE USER SELECTS A LETTER (VIRTUAL KEYBOARD)
             this.$keyList.on('click', '.key', async function(e) {
                 let key = $(this)[0].id;
                 await octopus.selectLetter(key);
@@ -198,7 +205,7 @@ $(function() {
             });
             view.render();
         },
-        
+
         initializeTimerView: function() {
           const updateClock = time => this.$timeCounter.html(`${Math.floor(time/10)}:${Math.floor((time%10)*60/10)}`);
           const updateWord = word => this.$wordTest.html(word);
